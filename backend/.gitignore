@@ -1,0 +1,23 @@
+# VSCode
+.vscode/
+
+# Dependencies
+/node_modules
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+
+# Local env files
+.env*.local
+.env
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts
