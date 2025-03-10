@@ -1,23 +1,27 @@
-# VSCode
-.vscode/
-
 # Dependencies
 /node_modules
 
-# Production
+# Build output
+/dist
 /build
 
 # Misc
 .DS_Store
 *.pem
 
+# Logs
+*.log
+
 # Debug
 npm-debug.log*
 
-# Local env files
+# Local environment files
 .env*.local
 .env
 
 # Typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Test Coverage
+/coverage/
