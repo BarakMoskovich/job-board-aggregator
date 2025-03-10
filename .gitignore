@@ -1,2 +1,17 @@
 # VSCode
 .vscode/
+
+# Local environment files
+.env*.local
+.env
+
+# Logs
+*.log
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Misc
+.DS_Store
+*.pem
