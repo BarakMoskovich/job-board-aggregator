@@ -27,6 +27,7 @@ model Preferences {
   locations                 String[]
   salaryMin                 Int?
   salaryMax                 Int?
+  currency                  String   @default("ILS")
   emailNotifications        Boolean  @default(true)
   pushNotifications         Boolean  @default(false)
   userId                    Int      @unique
@@ -40,6 +41,7 @@ model Job {
   location    String
   salaryMin   Int?
   salaryMax   Int?
+  currency    String   @default("USD")
   description String
   source      String
   postedAt    DateTime

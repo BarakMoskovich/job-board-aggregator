@@ -14,9 +14,8 @@ export const createUserHandler = async (
 ) => {
   try {
     const user = await createNewUser(req.body as SignupInput);
-    const { password, ...userWithoutPassword } = user;
 
-    return reply.status(201).send(userWithoutPassword);
+    return reply.status(201).send(user);
   } catch (error: unknown) {
     if (
       error instanceof Error &&

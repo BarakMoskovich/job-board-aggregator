@@ -1,16 +1,20 @@
 import prisma from '@/shared/services/prisma';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { User } from '@prisma/client';
 import { REFRESH_TOKEN_EXPIRATION_MS } from '@/config/constants';
-import { IAuth, INewUser, IUserCredentials } from '@/shared/types/auth.types';
+import {
+  IAuth,
+  INewUser,
+  IUserCredentials,
+  BasicUser,
+} from '@/shared/types/auth.types';
 import { env } from '@/config/env';
 
 export const createNewUser = async ({
   email,
   password,
   name,
-}: INewUser): Promise<User> => {
+}: INewUser): Promise<BasicUser> => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -19,6 +23,13 @@ export const createNewUser = async ({
         email,
         password: hashedPassword,
         name,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   } catch (error: unknown) {

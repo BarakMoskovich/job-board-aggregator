@@ -1,3 +1,7 @@
+import { User } from '@prisma/client';
+
+export type BasicUser = Omit<User, 'password'>;
+
 export interface IUserCredentials {
   email: string;
   password: string;
