@@ -17,7 +17,6 @@
     "@prisma/client": "^6.4.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^22.13.9",
     "@types/yup": "^0.29.14",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.7",
@@ -31,6 +30,7 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@types/node": "^22.13.10",
     "@typescript-eslint/eslint-plugin": "^8.26.0",
     "@typescript-eslint/parser": "^8.26.0",
     "eslint": "^9.22.0",

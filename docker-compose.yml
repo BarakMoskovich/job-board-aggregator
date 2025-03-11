@@ -6,8 +6,8 @@ services:
     container_name: job-board-db
     restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 39lgzb2Kp6K9
       POSTGRES_DB: job_board
     ports:
       - "5432:5432"

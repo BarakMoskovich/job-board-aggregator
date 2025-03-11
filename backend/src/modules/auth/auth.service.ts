@@ -4,24 +4,26 @@ import bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
 import { REFRESH_TOKEN_EXPIRATION_MS } from '@/config/constants';
 import { IAuth, INewUser, IUserCredentials } from '@/shared/types/auth.types';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
-const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refreshsecret';
+import { env } from '@/config/env';
 
 export const createNewUser = async ({
   email,
   password,
   name,
 }: INewUser): Promise<User> => {
-  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  return prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      name,
-    },
-  });
+    return await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+      },
+    });
+  } catch (error: unknown) {
+    throw error;
+  }
 };
 
 export const loginUser = async ({
@@ -34,40 +36,63 @@ export const loginUser = async ({
     throw new Error('Invalid credentials');
   }
 
-  const accessToken = jwt.sign({ userId: user.id }, JWT_SECRET, {
+  const accessToken = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
     expiresIn: '15m',
   });
-  const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, {
+  const refreshToken = jwt.sign({ userId: user.id }, env.REFRESH_SECRET, {
     expiresIn: '7d',
   });
 
-  await prisma.refreshToken.create({
-    data: {
-      token: refreshToken,
-      userId: user.id,
-      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRATION_MS),
-    },
-  });
+  try {
+    await prisma.refreshToken.deleteMany({
+      where: {
+        userId: user.id,
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    });
 
-  return { accessToken, refreshToken };
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRATION_MS),
+      },
+    });
+
+    return { accessToken, refreshToken };
+  } catch (error: unknown) {
+    throw new Error('Error generating authentication tokens');
+  }
 };
 
 export const revokeRefreshToken = async (token: string) => {
-  await prisma.refreshToken.deleteMany({ where: { token } });
+  try {
+    await prisma.refreshToken.deleteMany({ where: { token } });
+  } catch (error: unknown) {
+    throw new Error('Error revoking refresh token');
+  }
 };
 
 export const generateNewAccessToken = async (refreshToken: string) => {
-  const storedToken = await prisma.refreshToken.findUnique({
-    where: { token: refreshToken },
-  });
+  try {
+    const storedToken = await prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    });
 
-  if (!storedToken) {
-    throw new Error('Invalid refresh token');
+    if (!storedToken) {
+      throw new Error('Invalid refresh token');
+    }
+
+    const payload = jwt.verify(refreshToken, env.REFRESH_SECRET) as {
+      userId: string;
+    };
+
+    return jwt.sign({ userId: payload.userId }, env.JWT_SECRET, {
+      expiresIn: '15m',
+    });
+  } catch (error: unknown) {
+    throw new Error('Failed to generate new access token');
   }
-
-  const payload = jwt.verify(refreshToken, REFRESH_SECRET) as {
-    userId: string;
-  };
-
-  return jwt.sign({ userId: payload.userId }, JWT_SECRET, { expiresIn: '15m' });
 };

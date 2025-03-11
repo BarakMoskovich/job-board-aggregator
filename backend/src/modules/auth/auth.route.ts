@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify';
-import * as Yup from 'yup';
 import {
   loginHandler,
   createUserHandler,
@@ -7,31 +6,13 @@ import {
   refreshTokenHandler,
 } from './auth.controller';
 import { signupSchema, loginSchema, refreshSchema } from './auth.schema';
-
-const validateSchema = (schema: Yup.ObjectSchema<any>) => async (data: any) => {
-  try {
-    await schema.validate(data, { abortEarly: false });
-    return data;
-  } catch (err: any) {
-    throw new Error(err.errors.join(', '));
-  }
-};
+import { validateSchema } from '@/shared/utils/validation';
+import { authMiddleware } from '@/shared/middlewares/auth.middleware';
 
 async function authRoutes(server: FastifyInstance) {
   server.post(
     '/signup',
     {
-      schema: {
-        body: {
-          type: 'object',
-          properties: {
-            email: { type: 'string' },
-            password: { type: 'string' },
-            name: { type: 'string' },
-          },
-          required: ['email', 'password', 'name'],
-        },
-      },
       preValidation: async (req, reply) => {
         await validateSchema(signupSchema)(req.body);
       },
@@ -42,16 +23,6 @@ async function authRoutes(server: FastifyInstance) {
   server.post(
     '/login',
     {
-      schema: {
-        body: {
-          type: 'object',
-          properties: {
-            email: { type: 'string' },
-            password: { type: 'string' },
-          },
-          required: ['email', 'password'],
-        },
-      },
       preValidation: async (req, reply) => {
         await validateSchema(loginSchema)(req.body);
       },
@@ -67,6 +38,7 @@ async function authRoutes(server: FastifyInstance) {
           200: { type: 'object', properties: { message: { type: 'string' } } },
         },
       },
+      preHandler: authMiddleware,
     },
     logoutHandler,
   );
@@ -74,15 +46,7 @@ async function authRoutes(server: FastifyInstance) {
   server.post(
     '/refresh',
     {
-      schema: {
-        body: {
-          type: 'object',
-          properties: {
-            refreshToken: { type: 'string' },
-          },
-          required: ['refreshToken'],
-        },
-      },
+      preHandler: authMiddleware,
       preValidation: async (req, reply) => {
         await validateSchema(refreshSchema)(req.body);
       },
